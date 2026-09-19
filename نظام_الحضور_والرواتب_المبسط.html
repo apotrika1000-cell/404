@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام الحضور والرواتب - محمي بكلمة مرور</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 p-3 sm:p-6 min-h-screen">
+  <div id="app" class="max-w-7xl mx-auto space-y-5"></div>
+
+  <script>
+    const INITIAL_DATA = {"month": "2026-08", "monthTitle": "أغسطس 2026", "employees": [{"id": "emp_1", "name": "Magdy", "baseSalary": 4000, "hourlyRate": 20, "defaultShift": "5:00-2:00", "phone": "", "color": "#3B82F6"}, {"id": "emp_2", "name": "Eslam", "baseSalary": 4000, "hourlyRate": 20, "defaultShift": "5:00-2:00", "phone": "", "color": "#10B981"}, {"id": "emp_3", "name": "Amr", "baseSalary": 4000, "hourlyRate": 20, "defaultShift": "5:00-2:00", "phone": "", "color": "#F59E0B"}, {"id": "emp_4", "name": "ahmed mohamed", "baseSalary": 4000, "hourlyRate": 20, "defaultShift": "5:00-2:00", "phone": "", "color": "#8B5CF6"}, {"id": "emp_5", "name": "MAREY", "baseSalary": 4000, "hourlyRate": 20, "defaultShift": "5:00-2:00", "phone": "", "color": "#EC4899"}, {"id": "emp_6", "name": "Ahmed kawas", "baseSalary": 4000, "hourlyRate": 20, "defaultShift": "5:00-2:00", "phone": "", "color": "#06B6D4"}, {"id": "emp_7", "name": "Alaa treka", "baseSalary": 4000, "hourlyRate": 20, "defaultShift": "5:00-2:00", "phone": "", "color": "#6366F1"}], "attendance": [{"id": "att_1", "employeeId": "emp_1", "date": "2026-09-01", "status": "present", "shift": "5:00-1:00", "hours": 8.0, "notes": ""}, {"id": "att_2", "employeeId": "emp_2", "date": "2026-09-01", "status": "present", "shift": "9:00-5:00", "hours": 8.0, "notes": ""}, {"id": "att_3", "employeeId": "emp_3", "date": "2026-09-01", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_4", "employeeId": "emp_5", "date": "2026-09-01", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_5", "employeeId": "emp_6", "date": "2026-09-01", "status": "present", "shift": "9:00-5:00", "hours": 8.0, "notes": ""}, {"id": "att_6", "employeeId": "emp_1", "date": "2026-09-02", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_7", "employeeId": "emp_2", "date": "2026-09-02", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_8", "employeeId": "emp_3", "date": "2026-09-02", "status": "present", "shift": "9:00-5:00", "hours": 8.0, "notes": ""}, {"id": "att_9", "employeeId": "emp_5", "date": "2026-09-02", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_10", "employeeId": "emp_6", "date": "2026-09-02", "status": "present", "shift": "9:00-5:00", "hours": 8.0, "notes": ""}, {"id": "att_11", "employeeId": "emp_7", "date": "2026-09-02", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_12", "employeeId": "emp_1", "date": "2026-09-03", "status": "present", "shift": "10:00-2:00", "hours": 4.0, "notes": ""}, {"id": "att_13", "employeeId": "emp_2", "date": "2026-09-03", "status": "present", "shift": "5:00-2:01", "hours": 9.02, "notes": ""}, {"id": "att_14", "employeeId": "emp_3", "date": "2026-09-03", "status": "present", "shift": "9:00-5:01", "hours": 8.02, "notes": ""}, {"id": "att_15", "employeeId": "emp_5", "date": "2026-09-03", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_16", "employeeId": "emp_6", "date": "2026-09-03", "status": "present", "shift": "9:00-5:01", "hours": 8.02, "notes": ""}, {"id": "att_17", "employeeId": "emp_7", "date": "2026-09-03", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_18", "employeeId": "emp_1", "date": "2026-09-04", "status": "present", "shift": "4:30-2:00", "hours": 9.5, "notes": ""}, {"id": "att_19", "employeeId": "emp_2", "date": "2026-09-04", "status": "present", "shift": "5:00-2:02", "hours": 9.03, "notes": ""}, {"id": "att_20", "employeeId": "emp_3", "date": "2026-09-04", "status": "present", "shift": "9:00-5:02", "hours": 8.03, "notes": ""}, {"id": "att_21", "employeeId": "emp_5", "date": "2026-09-04", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_22", "employeeId": "emp_6", "date": "2026-09-04", "status": "present", "shift": "9:00-5:02", "hours": 8.03, "notes": ""}, {"id": "att_23", "employeeId": "emp_7", "date": "2026-09-04", "status": "present", "shift": "5:00-2:01", "hours": 9.02, "notes": ""}, {"id": "att_24", "employeeId": "emp_1", "date": "2026-09-05", "status": "present", "shift": "6:00-2:00", "hours": 8.0, "notes": ""}, {"id": "att_25", "employeeId": "emp_2", "date": "2026-09-05", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_26", "employeeId": "emp_3", "date": "2026-09-05", "status": "present", "shift": "9:00-5:03", "hours": 8.05, "notes": ""}, {"id": "att_27", "employeeId": "emp_5", "date": "2026-09-05", "status": "paid", "shift": "قبض", "hours": 0, "notes": "قبض"}, {"id": "att_28", "employeeId": "emp_6", "date": "2026-09-05", "status": "present", "shift": "9:00-5:03", "hours": 8.05, "notes": ""}, {"id": "att_29", "employeeId": "emp_7", "date": "2026-09-05", "status": "present", "shift": "5:00-2:02", "hours": 9.03, "notes": ""}, {"id": "att_30", "employeeId": "emp_1", "date": "2026-09-06", "status": "present", "shift": "6:00-2:00", "hours": 8.0, "notes": ""}, {"id": "att_31", "employeeId": "emp_2", "date": "2026-09-06", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_32", "employeeId": "emp_3", "date": "2026-09-06", "status": "present", "shift": "9:00-5:04", "hours": 8.07, "notes": ""}, {"id": "att_33", "employeeId": "emp_6", "date": "2026-09-06", "status": "present", "shift": "9:00-5:04", "hours": 8.07, "notes": ""}, {"id": "att_34", "employeeId": "emp_7", "date": "2026-09-06", "status": "present", "shift": "5:00-2:03", "hours": 9.05, "notes": ""}, {"id": "att_35", "employeeId": "emp_1", "date": "2026-09-07", "status": "present", "shift": "8:00-2:00", "hours": 6.0, "notes": ""}, {"id": "att_36", "employeeId": "emp_2", "date": "2026-09-07", "status": "present", "shift": "5:00-2:01", "hours": 9.02, "notes": ""}, {"id": "att_37", "employeeId": "emp_3", "date": "2026-09-07", "status": "present", "shift": "9:00-5:05", "hours": 8.08, "notes": ""}, {"id": "att_38", "employeeId": "emp_6", "date": "2026-09-07", "status": "present", "shift": "9:00-5:05", "hours": 8.08, "notes": ""}, {"id": "att_39", "employeeId": "emp_7", "date": "2026-09-07", "status": "present", "shift": "5:00-2:04", "hours": 9.07, "notes": ""}, {"id": "att_40", "employeeId": "emp_1", "date": "2026-09-08", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_41", "employeeId": "emp_2", "date": "2026-09-08", "status": "present", "shift": "5:00-2:02", "hours": 9.03, "notes": ""}, {"id": "att_42", "employeeId": "emp_3", "date": "2026-09-08", "status": "present", "shift": "9:00-5:06", "hours": 8.1, "notes": ""}, {"id": "att_43", "employeeId": "emp_6", "date": "2026-09-08", "status": "present", "shift": "9:00-5:06", "hours": 8.1, "notes": ""}, {"id": "att_44", "employeeId": "emp_7", "date": "2026-09-08", "status": "present", "shift": "5:00-2:05", "hours": 9.08, "notes": ""}, {"id": "att_45", "employeeId": "emp_1", "date": "2026-09-09", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_46", "employeeId": "emp_2", "date": "2026-09-09", "status": "present", "shift": "5:00-2:03", "hours": 9.05, "notes": ""}, {"id": "att_47", "employeeId": "emp_3", "date": "2026-09-09", "status": "present", "shift": "9:00-5:07", "hours": 8.12, "notes": ""}, {"id": "att_48", "employeeId": "emp_6", "date": "2026-09-09", "status": "present", "shift": "9:00-5:07", "hours": 8.12, "notes": ""}, {"id": "att_49", "employeeId": "emp_7", "date": "2026-09-09", "status": "present", "shift": "5:00-2:06", "hours": 9.1, "notes": ""}, {"id": "att_50", "employeeId": "emp_1", "date": "2026-09-10", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_51", "employeeId": "emp_1", "date": "2026-09-11", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_52", "employeeId": "emp_1", "date": "2026-09-12", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_53", "employeeId": "emp_1", "date": "2026-09-13", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_54", "employeeId": "emp_1", "date": "2026-09-14", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_55", "employeeId": "emp_1", "date": "2026-09-15", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_56", "employeeId": "emp_1", "date": "2026-09-16", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_57", "employeeId": "emp_1", "date": "2026-09-17", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_58", "employeeId": "emp_1", "date": "2026-09-18", "status": "present", "shift": "5:00-2:-00", "hours": 9.0, "notes": ""}, {"id": "att_59", "employeeId": "emp_1", "date": "2026-09-19", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_60", "employeeId": "emp_1", "date": "2026-09-20", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_61", "employeeId": "emp_1", "date": "2026-09-21", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_62", "employeeId": "emp_1", "date": "2026-09-22", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_63", "employeeId": "emp_1", "date": "2026-09-23", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_64", "employeeId": "emp_1", "date": "2026-09-24", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_65", "employeeId": "emp_1", "date": "2026-09-25", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_66", "employeeId": "emp_1", "date": "2026-09-26", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_67", "employeeId": "emp_1", "date": "2026-09-27", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_68", "employeeId": "emp_1", "date": "2026-09-28", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_69", "employeeId": "emp_1", "date": "2026-09-29", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_70", "employeeId": "emp_1", "date": "2026-09-30", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_71", "employeeId": "emp_1", "date": "2026-10-01", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_72", "employeeId": "emp_2", "date": "2026-10-02", "status": "present", "shift": "9:00-5:00", "hours": 8.0, "notes": ""}, {"id": "att_73", "employeeId": "emp_3", "date": "2026-10-02", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_74", "employeeId": "emp_5", "date": "2026-10-02", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_75", "employeeId": "emp_6", "date": "2026-10-02", "status": "present", "shift": "9:00-5:00", "hours": 8.0, "notes": ""}, {"id": "att_76", "employeeId": "emp_2", "date": "2026-10-03", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_77", "employeeId": "emp_3", "date": "2026-10-03", "status": "present", "shift": "9:00-5:00", "hours": 8.0, "notes": ""}, {"id": "att_78", "employeeId": "emp_5", "date": "2026-10-03", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_79", "employeeId": "emp_6", "date": "2026-10-03", "status": "present", "shift": "9:00-5:00", "hours": 8.0, "notes": ""}, {"id": "att_80", "employeeId": "emp_7", "date": "2026-10-03", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_81", "employeeId": "emp_2", "date": "2026-10-04", "status": "present", "shift": "5:00-2:01", "hours": 9.02, "notes": ""}, {"id": "att_82", "employeeId": "emp_3", "date": "2026-10-04", "status": "present", "shift": "9:00-5:01", "hours": 8.02, "notes": ""}, {"id": "att_83", "employeeId": "emp_5", "date": "2026-10-04", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_84", "employeeId": "emp_6", "date": "2026-10-04", "status": "present", "shift": "9:00-5:01", "hours": 8.02, "notes": ""}, {"id": "att_85", "employeeId": "emp_7", "date": "2026-10-04", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_86", "employeeId": "emp_2", "date": "2026-10-05", "status": "present", "shift": "5:00-2:02", "hours": 9.03, "notes": ""}, {"id": "att_87", "employeeId": "emp_3", "date": "2026-10-05", "status": "present", "shift": "9:00-5:02", "hours": 8.03, "notes": ""}, {"id": "att_88", "employeeId": "emp_5", "date": "2026-10-05", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_89", "employeeId": "emp_6", "date": "2026-10-05", "status": "present", "shift": "9:00-5:02", "hours": 8.03, "notes": ""}, {"id": "att_90", "employeeId": "emp_7", "date": "2026-10-05", "status": "present", "shift": "5:00-2:01", "hours": 9.02, "notes": ""}, {"id": "att_91", "employeeId": "emp_2", "date": "2026-10-06", "status": "holiday", "shift": "اجازه", "hours": 0, "notes": ""}, {"id": "att_92", "employeeId": "emp_3", "date": "2026-10-06", "status": "present", "shift": "9:00-5:03", "hours": 8.05, "notes": ""}, {"id": "att_93", "employeeId": "emp_5", "date": "2026-10-06", "status": "paid", "shift": "قبض", "hours": 0, "notes": "قبض"}, {"id": "att_94", "employeeId": "emp_6", "date": "2026-10-06", "status": "present", "shift": "9:00-5:03", "hours": 8.05, "notes": ""}, {"id": "att_95", "employeeId": "emp_7", "date": "2026-10-06", "status": "present", "shift": "5:00-2:02", "hours": 9.03, "notes": ""}, {"id": "att_96", "employeeId": "emp_2", "date": "2026-10-07", "status": "present", "shift": "5:00-2:00", "hours": 9.0, "notes": ""}, {"id": "att_97", "employeeId": "emp_3", "date": "2026-10-07", "status": "present", "shift": "9:00-5:04", "hours": 8.07, "notes": ""}, {"id": "att_98", "employeeId": "emp_6", "date": "2026-10-07", "status": "present", "shift": "9:00-5:04", "hours": 8.07, "notes": ""}, {"id": "att_99", "employeeId": "emp_7", "date": "2026-10-07", "status": "present", "shift": "5:00-2:03", "hours": 9.05, "notes": ""}, {"id": "att_100", "employeeId": "emp_2", "date": "2026-10-08", "status": "present", "shift": "5:00-2:01", "hours": 9.02, "notes": ""}, {"id": "att_101", "employeeId": "emp_3", "date": "2026-10-08", "status": "present", "shift": "9:00-5:05", "hours": 8.08, "notes": ""}, {"id": "att_102", "employeeId": "emp_6", "date": "2026-10-08", "status": "present", "shift": "9:00-5:05", "hours": 8.08, "notes": ""}, {"id": "att_103", "employeeId": "emp_7", "date": "2026-10-08", "status": "present", "shift": "5:00-2:04", "hours": 9.07, "notes": ""}, {"id": "att_104", "employeeId": "emp_2", "date": "2026-10-09", "status": "present", "shift": "5:00-2:02", "hours": 9.03, "notes": ""}, {"id": "att_105", "employeeId": "emp_3", "date": "2026-10-09", "status": "present", "shift": "9:00-5:06", "hours": 8.1, "notes": ""}, {"id": "att_106", "employeeId": "emp_6", "date": "2026-10-09", "status": "present", "shift": "9:00-5:06", "hours": 8.1, "notes": ""}, {"id": "att_107", "employeeId": "emp_7", "date": "2026-10-09", "status": "present", "shift": "5:00-2:05", "hours": 9.08, "notes": ""}, {"id": "att_108", "employeeId": "emp_2", "date": "2026-10-10", "status": "present", "shift": "5:00-2:03", "hours": 9.05, "notes": ""}, {"id": "att_109", "employeeId": "emp_3", "date": "2026-10-10", "status": "present", "shift": "9:00-5:07", "hours": 8.12, "notes": ""}, {"id": "att_110", "employeeId": "emp_6", "date": "2026-10-10", "status": "present", "shift": "9:00-5:07", "hours": 8.12, "notes": ""}, {"id": "att_111", "employeeId": "emp_7", "date": "2026-10-10", "status": "present", "shift": "5:00-2:06", "hours": 9.1, "notes": ""}], "advances": [{"id": "adv_1", "employeeId": "emp_5", "date": "2026-09-01", "amount": 230.0, "type": "advance", "rawText": "230", "notes": "مسجل من الشيت (230)"}, {"id": "adv_2", "employeeId": "emp_3", "date": "2026-09-02", "amount": 100.0, "type": "advance", "rawText": "100", "notes": "مسجل من الشيت (100)"}, {"id": "adv_3", "employeeId": "emp_1", "date": "2026-09-03", "amount": 320.0, "type": "deduction", "rawText": "D    - 320", "notes": "مسجل من الشيت (D    - 320)"}, {"id": "adv_4", "employeeId": "emp_5", "date": "2026-09-04", "amount": 140.0, "type": "advance", "rawText": "140", "notes": "مسجل من الشيت (140)"}, {"id": "adv_5", "employeeId": "emp_5", "date": "2026-09-05", "amount": 1000.0, "type": "salary_payment", "rawText": "1000", "notes": "مسجل من الشيت (1000)"}, {"id": "adv_6", "employeeId": "emp_1", "date": "2026-09-06", "amount": 1000.0, "type": "advance", "rawText": "1000", "notes": "مسجل من الشيت (1000)"}, {"id": "adv_7", "employeeId": "emp_3", "date": "2026-09-06", "amount": 100.0, "type": "advance", "rawText": "100", "notes": "مسجل من الشيت (100)"}, {"id": "adv_8", "employeeId": "emp_3", "date": "2026-09-08", "amount": 100.0, "type": "advance", "rawText": "100", "notes": "مسجل من الشيت (100)"}, {"id": "adv_9", "employeeId": "emp_7", "date": "2026-09-08", "amount": 100.0, "type": "advance", "rawText": "100", "notes": "مسجل من الشيت (100)"}, {"id": "adv_10", "employeeId": "emp_1", "date": "2026-09-09", "amount": 120.0, "type": "advance", "rawText": "120", "notes": "مسجل من الشيت (120)"}, {"id": "adv_11", "employeeId": "emp_7", "date": "2026-09-09", "amount": 500.0, "type": "advance", "rawText": "500", "notes": "مسجل من الشيت (500)"}, {"id": "adv_12", "employeeId": "emp_1", "date": "2026-09-12", "amount": 200.0, "type": "advance", "rawText": "200", "notes": "مسجل من الشيت (200)"}, {"id": "adv_13", "employeeId": "emp_1", "date": "2026-09-13", "amount": 200.0, "type": "advance", "rawText": "200", "notes": "مسجل من الشيت (200)"}, {"id": "adv_14", "employeeId": "emp_1", "date": "2026-09-15", "amount": 200.0, "type": "advance", "rawText": "200", "notes": "مسجل من الشيت (200)"}, {"id": "adv_15", "employeeId": "emp_1", "date": "2026-09-17", "amount": 1500.0, "type": "advance", "rawText": "1500", "notes": "مسجل من الشيت (1500)"}, {"id": "adv_16", "employeeId": "emp_1", "date": "2026-09-19", "amount": 170.0, "type": "advance", "rawText": "170", "notes": "مسجل من الشيت (170)"}, {"id": "adv_17", "employeeId": "emp_1", "date": "2026-09-25", "amount": 1000.0, "type": "advance", "rawText": "1000", "notes": "مسجل من الشيت (1000)"}, {"id": "adv_18", "employeeId": "emp_5", "date": "2026-10-02", "amount": 230.0, "type": "advance", "rawText": "230", "notes": "مسجل من الشيت (230)"}, {"id": "adv_19", "employeeId": "emp_3", "date": "2026-10-03", "amount": 100.0, "type": "advance", "rawText": "100", "notes": "مسجل من الشيت (100)"}, {"id": "adv_20", "employeeId": "emp_5", "date": "2026-10-05", "amount": 140.0, "type": "advance", "rawText": "140", "notes": "مسجل من الشيت (140)"}, {"id": "adv_21", "employeeId": "emp_5", "date": "2026-10-06", "amount": 1000.0, "type": "salary_payment", "rawText": "1000", "notes": "مسجل من الشيت (1000)"}, {"id": "adv_22", "employeeId": "emp_3", "date": "2026-10-07", "amount": 100.0, "type": "advance", "rawText": "100", "notes": "مسجل من الشيت (100)"}, {"id": "adv_23", "employeeId": "emp_3", "date": "2026-10-09", "amount": 100.0, "type": "advance", "rawText": "100", "notes": "مسجل من الشيت (100)"}, {"id": "adv_24", "employeeId": "emp_7", "date": "2026-10-09", "amount": 100.0, "type": "advance", "rawText": "100", "notes": "مسجل من الشيت (100)"}, {"id": "adv_25", "employeeId": "emp_7", "date": "2026-10-10", "amount": 500.0, "type": "advance", "rawText": "500", "notes": "مسجل من الشيت (500)"}]};
+    const STORAGE_KEY = 'attendance_simple_standalone_v2';
+    const AUTH_KEY = 'attendance_app_is_authenticated';
+    const PASS_KEY = 'attendance_app_password_custom';
+    const DEFAULT_PASS = '123456'; // كلمة المرور الافتراضية
+
+    let state = {
+      isAuthenticated: false,
+      monthTitle: INITIAL_DATA.monthTitle || 'أغسطس 2026',
+      employees: INITIAL_DATA.employees || [],
+      attendance: INITIAL_DATA.attendance || [],
+      advances: INITIAL_DATA.advances || [],
+      selectedEmpFilter: 'all',
+      searchTerm: '',
+      loginError: false
+    };
+
+    // Check auth session
+    try {
+      if (sessionStorage.getItem(AUTH_KEY) === 'true' || localStorage.getItem(AUTH_KEY) === 'true') {
+        state.isAuthenticated = true;
+      }
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.employees) state.employees = parsed.employees;
+        if (parsed.attendance) state.attendance = parsed.attendance;
+        if (parsed.advances) state.advances = parsed.advances;
+      }
+    } catch (e) {}
+
+    function getStoredPassword() {
+      return localStorage.getItem(PASS_KEY) || DEFAULT_PASS;
+    }
+
+    function checkPassword(inputPass, remember) {
+      const correctPass = getStoredPassword();
+      if (inputPass === correctPass) {
+        state.isAuthenticated = true;
+        state.loginError = false;
+        if (remember) {
+          localStorage.setItem(AUTH_KEY, 'true');
+        } else {
+          sessionStorage.setItem(AUTH_KEY, 'true');
+        }
+        render();
+      } else {
+        state.loginError = true;
+        render();
+      }
+    }
+
+    function logout() {
+      state.isAuthenticated = false;
+      sessionStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(AUTH_KEY);
+      render();
+    }
+
+    function changePassword() {
+      const currentPass = getStoredPassword();
+      const oldPass = prompt('أدخل كلمة المرور الحالية:');
+      if (oldPass !== currentPass) {
+        alert('كلمة المرور الحالية غير صحيحة!');
+        return;
+      }
+      const newPass = prompt('أدخل كلمة المرور الجديدة:');
+      if (newPass && newPass.trim().length >= 4) {
+        localStorage.setItem(PASS_KEY, newPass.trim());
+        alert('تم تغيير كلمة المرور بنجاح! كلمة مرورك الجديدة هي: ' + newPass.trim());
+      } else {
+        alert('كلمة المرور يجب أن تكون 4 أحرف/أرقام على الأقل.');
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          monthTitle: state.monthTitle,
+          employees: state.employees,
+          attendance: state.attendance,
+          advances: state.advances
+        }));
+      } catch (e) {}
+      render();
+    }
+
+    function parseShiftHours(shiftStr) {
+      if (!shiftStr) return 0;
+      const str = String(shiftStr).trim();
+      if (str.includes('اجازه') || str.includes('إجازة') || str.includes('غياب') || str.includes('قبض')) return 0;
+      const match = str.match(/(\d+)(?::(\d+))?\s*-\s*(\d+)(?::(\d+))?/);
+      if (match) {
+        const h1 = parseInt(match[1], 10);
+        const m1 = match[2] ? parseInt(match[2], 10) : 0;
+        const h2 = parseInt(match[3], 10);
+        const m2 = match[4] ? parseInt(match[4], 10) : 0;
+        let diff = (h2 <= h1) ? ((12 - h1 + h2) + (m2 - m1) / 60.0) : ((h2 - h1) + (m2 - m1) / 60.0);
+        return Math.round(diff * 100) / 100;
+      }
+      const num = parseFloat(str);
+      return !isNaN(num) ? num : 0;
+    }
+
+    function getSummary(emp) {
+      const empAtt = state.attendance.filter(a => a.employeeId === emp.id);
+      const empAdv = state.advances.filter(a => a.employeeId === emp.id);
+
+      let presentDays = 0, holidayDays = 0, totalHours = 0;
+      empAtt.forEach(a => {
+        if (a.status === 'present') {
+          presentDays++;
+          totalHours += a.hours || parseShiftHours(a.shift);
+        } else if (a.status === 'holiday') holidayDays++;
+      });
+
+      let totalAdv = 0, totalDed = 0;
+      empAdv.forEach(a => {
+        const amt = parseFloat(a.amount) || 0;
+        if (a.type === 'advance') totalAdv += amt;
+        else if (a.type === 'deduction') totalDed += amt;
+      });
+
+      const hourlyRate = emp.hourlyRate || 20;
+      const earned = Math.round(totalHours * hourlyRate);
+      const net = earned - (totalAdv + totalDed);
+
+      return { presentDays, holidayDays, totalHours: Math.round(totalHours*10)/10, totalAdv, totalDed, earned, net };
+    }
+
+    function exportExcel() {
+      const wb = XLSX.utils.book_new();
+      const dateSet = new Set();
+      state.attendance.forEach(a => a.date && dateSet.add(a.date));
+      state.advances.forEach(a => a.date && dateSet.add(a.date));
+      const sortedDates = Array.from(dateSet).sort();
+
+      const h1 = ['التاريخ', 'اليوم'];
+      const h2 = ['', ''];
+      state.employees.forEach(emp => {
+        h1.push(emp.name, '');
+        h2.push('حضور', 'سلف');
+      });
+
+      const rows = [h1, h2];
+      sortedDates.forEach(dStr => {
+        const dObj = new Date(dStr);
+        const dayName = isNaN(dObj.getTime()) ? '' : dObj.toLocaleDateString('ar-EG', { weekday: 'long' });
+        const row = [dStr, dayName];
+        state.employees.forEach(emp => {
+          const att = state.attendance.find(a => a.employeeId === emp.id && a.date === dStr);
+          const advs = state.advances.filter(a => a.employeeId === emp.id && a.date === dStr);
+          const shiftVal = att ? (att.status === 'holiday' ? 'اجازه' : att.shift || '') : '';
+          const advVal = advs.map(a => a.amount).join('+');
+          row.push(shiftVal, advVal);
+        });
+        rows.push(row);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, 'شيت الحضور');
+      XLSX.writeFile(wb, `شيت_الحضور_${state.monthTitle}.xlsx`);
+    }
+
+    function render() {
+      const app = document.getElementById('app');
+
+      // 1. If not authenticated, render Login Screen
+      if (!state.isAuthenticated) {
+        app.innerHTML = `
+          <div class="min-h-[80vh] flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-8 max-w-md w-full text-center space-y-5">
+              <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-800 text-white flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/30 text-2xl font-black">
+                🔒
+              </div>
+              <div>
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900">تسجيل الدخول للنظام</h1>
+                <p class="text-xs text-slate-500 mt-1">هذا الموقع محمي، يرجى إدخال كلمة المرور للمتابعة</p>
+              </div>
+
+              ${state.loginError ? `
+                <div class="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl animate-shake">
+                  ❌ كلمة المرور غير صحيحة، حاول مجدداً!
+                </div>
+              ` : ''}
+
+              <form onsubmit="event.preventDefault(); const p = document.getElementById('pwd').value; const r = document.getElementById('rem').checked; checkPassword(p, r);" class="space-y-4 text-right">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
+                  <input id="pwd" type="password" autofocus required placeholder="أدخل كلمة المرور..." 
+                         class="w-full px-4 py-3 rounded-xl border border-slate-300 text-center text-base tracking-widest font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+                
+                <div class="flex items-center justify-between text-xs text-slate-600">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input id="rem" type="checkbox" checked class="rounded text-indigo-600 focus:ring-0" />
+                    <span>تذكر تسجيل الدخول على هذا الجهاز</span>
+                  </label>
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-sm shadow-md shadow-indigo-600/30 transition">
+                  دخول النظام
+                </button>
+              </form>
+
+              <p class="text-[11px] text-slate-400">كلمة المرور الافتراضية: <strong class="text-slate-600">123456</strong> (يمكنك تغييرها لاحقاً من داخل النظام)</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. Render Main Application
+      const dateSet = new Set();
+      state.attendance.forEach(a => a.date && dateSet.add(a.date));
+      state.advances.forEach(a => a.date && dateSet.add(a.date));
+      const sortedDates = Array.from(dateSet).sort().filter(d => !state.searchTerm || d.includes(state.searchTerm));
+
+      const visibleEmployees = state.selectedEmpFilter === 'all' 
+        ? state.employees 
+        : state.employees.filter(e => e.id === state.selectedEmpFilter);
+
+      let cardsHtml = '';
+      state.employees.forEach(emp => {
+        const s = getSummary(emp);
+        const isSel = state.selectedEmpFilter === emp.id;
+        cardsHtml += `
+          <div onclick="state.selectedEmpFilter = (state.selectedEmpFilter === '${emp.id}' ? 'all' : '${emp.id}'); render();" 
+               class="bg-white rounded-2xl p-3 border cursor-pointer shadow-sm transition ${isSel ? 'border-indigo-600 ring-2 ring-indigo-500/20 bg-indigo-50/40' : 'border-slate-200 hover:border-indigo-300'}">
+            <div class="flex items-center gap-2 mb-1.5">
+              <div class="w-6 h-6 rounded-lg text-white font-bold flex items-center justify-center text-xs" style="background-color: ${emp.color || '#4F46E5'}">
+                ${emp.name.charAt(0)}
+              </div>
+              <h3 class="font-bold text-xs text-slate-900 truncate">${emp.name}</h3>
+            </div>
+            <div class="text-[11px] text-slate-600 space-y-0.5">
+              <div class="flex justify-between"><span>حضور:</span><span class="font-bold text-emerald-700">${s.presentDays}ي (${s.totalHours}س)</span></div>
+              <div class="flex justify-between"><span>سلف:</span><span class="font-bold text-rose-600">${s.totalAdv > 0 ? s.totalAdv + ' ج' : '-'}</span></div>
+              <div class="pt-1 mt-1 border-t border-slate-100 flex justify-between font-black text-indigo-900 text-xs">
+                <span>الصافي:</span><span>${s.net} ج</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      let tableRows = '';
+      sortedDates.forEach((dStr, rIdx) => {
+        const dObj = new Date(dStr);
+        const dayName = isNaN(dObj.getTime()) ? '' : dObj.toLocaleDateString('ar-EG', { weekday: 'long' });
+        const isFri = dayName === 'الجمعة';
+
+        let empCols = '';
+        visibleEmployees.forEach(emp => {
+          const att = state.attendance.find(a => a.employeeId === emp.id && a.date === dStr);
+          const advs = state.advances.filter(a => a.employeeId === emp.id && a.date === dStr);
+          const shiftVal = att ? (att.status === 'holiday' ? 'اجازه' : att.shift || '') : '';
+          const advVal = advs.map(a => a.amount).join('+');
+
+          empCols += `
+            <td onclick="editCell('${emp.id}', '${dStr}', 'shift', '${shiftVal}')" 
+                class="py-1.5 px-2 border-l border-slate-200 text-center cursor-pointer transition select-none ${shiftVal === 'اجازه' ? 'bg-amber-100 font-bold text-amber-800' : shiftVal ? 'bg-emerald-50 font-semibold text-emerald-900' : 'text-slate-300 hover:bg-slate-100'}">
+              ${shiftVal || '-'}
+            </td>
+            <td onclick="editCell('${emp.id}', '${dStr}', 'advance', '${advVal}')" 
+                class="py-1.5 px-2 border-l border-slate-200 text-center cursor-pointer transition select-none ${advVal ? 'bg-rose-50 font-bold text-rose-700' : 'text-slate-300 hover:bg-slate-100'}">
+              ${advVal || '-'}
+            </td>
+          `;
+        });
+
+        tableRows += `
+          <tr class="${isFri ? 'bg-indigo-50/50' : rIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}">
+            <td class="py-1.5 px-2 font-bold text-slate-700 border-l border-slate-200 text-center bg-slate-100/50">${dStr}</td>
+            <td class="py-1.5 px-2 text-slate-500 border-l border-slate-200 text-center font-medium">${dayName}</td>
+            ${empCols}
+          </tr>
+        `;
+      });
+
+      let footCols = '';
+      visibleEmployees.forEach(emp => {
+        const s = getSummary(emp);
+        footCols += `
+          <td class="py-2 px-2 border-l border-slate-700 text-center text-emerald-300 font-bold">${s.presentDays}ي (${s.totalHours}س)</td>
+          <td class="py-2 px-2 border-l border-slate-700 text-center text-amber-300 font-bold">${s.totalAdv > 0 ? s.totalAdv + ' ج' : '-'}</td>
+        `;
+      });
+
+      let payrollRows = '';
+      state.employees.forEach((emp, idx) => {
+        const s = getSummary(emp);
+        payrollRows += `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2.5 px-3 font-semibold text-slate-500">${idx + 1}</td>
+            <td class="py-2.5 px-3 font-bold text-slate-900">${emp.name}</td>
+            <td class="py-2.5 px-3 text-center font-bold text-emerald-700">${s.presentDays} يوم</td>
+            <td class="py-2.5 px-3 text-center font-bold text-slate-700">${s.totalHours} س</td>
+            <td class="py-2.5 px-3 text-center font-semibold text-slate-800">${s.earned} ج.م</td>
+            <td class="py-2.5 px-3 text-center font-bold text-rose-600">${s.totalAdv > 0 ? '-' + s.totalAdv + ' ج.م' : '-'}</td>
+            <td class="py-2.5 px-3 text-center font-black text-indigo-950 bg-indigo-50/50 text-sm">${s.net} ج.م</td>
+            <td class="py-2.5 px-3 text-center text-slate-400 font-mono text-[10px]">...................</td>
+          </tr>
+        `;
+      });
+
+      app.innerHTML = `
+        <!-- Header -->
+        <header class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-md shadow-indigo-600/30">✓</div>
+            <div>
+              <h1 class="text-xl font-black text-slate-900">نظام إدارة الحضور والرواتب</h1>
+              <p class="text-xs text-slate-500">شهر: ${state.monthTitle} • <span class="text-emerald-600 font-bold">محمي وحفظ تلقائي مفعل</span></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <button onclick="exportExcel()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm">تصدير Excel</button>
+            <button onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold shadow-sm">طباعة الكشف</button>
+            <button onclick="changePassword()" class="px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold border border-amber-200" title="تغيير كلمة المرور">🔑 تغيير الرمز</button>
+            <button onclick="logout()" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200" title="قفل / تسجيل الخروج">🔒 قفل</button>
+          </div>
+        </header>
+
+        <!-- Employee Badges -->
+        <section class="no-print">
+          <div class="flex justify-between items-center mb-2.5">
+            <h2 class="text-xs font-bold text-slate-700">ملخص سريع للموظفين (اضغط للتصفية):</h2>
+            ${state.selectedEmpFilter !== 'all' ? '<button onclick="state.selectedEmpFilter=\'all\'; render();" class="text-xs font-bold text-indigo-600">عرض الكل</button>' : ''}
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">${cardsHtml}</div>
+        </section>
+
+        <!-- Quick Add Bar -->
+        <section class="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-sm no-print">
+          <form onsubmit="handleQuickSubmit(event)" class="flex flex-wrap items-center gap-2.5 text-xs">
+            <span class="font-bold text-slate-800">تسجيل سريع:</span>
+            <select id="qEmp" class="px-3 py-1.5 rounded-xl border border-slate-300 font-bold bg-slate-50">
+              ${state.employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('')}
+            </select>
+            <input id="qDate" type="date" value="2026-09-01" class="px-3 py-1.5 rounded-xl border border-slate-300 font-bold" />
+            <select id="qType" onchange="document.getElementById('qAmt').style.display = (this.value === 'advance' ? 'inline-block' : 'none')" class="px-3 py-1.5 rounded-xl border border-slate-300 font-bold bg-slate-50">
+              <option value="5:00-2:00">وردية مسائية (5:00-2:00)</option>
+              <option value="9:00-5:00">وردية صباحية (9:00-5:00)</option>
+              <option value="اجازه">إجازة</option>
+              <option value="advance">سلفة نقدية</option>
+            </select>
+            <input id="qAmt" type="number" placeholder="المبلغ" style="display:none;" class="w-24 px-2 py-1.5 rounded-xl border border-amber-300 bg-amber-50 font-bold text-center" />
+            <button type="submit" class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold mr-auto">حفظ</button>
+          </form>
+        </section>
+
+        <!-- Main Matrix Table -->
+        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="p-3.5 border-b border-slate-200/80 flex justify-between items-center bg-slate-50/60 no-print">
+            <h2 class="text-xs font-bold text-slate-900">جدول الحضور والسلف المباشر (انقر على أي خلية للتعديل)</h2>
+            <input type="text" placeholder="بحث بالتاريخ..." oninput="state.searchTerm = this.value; render();" value="${state.searchTerm}" class="px-3 py-1 rounded-xl border border-slate-200 text-xs w-40 bg-white" />
+          </div>
+          <div class="overflow-x-auto max-h-[58vh]">
+            <table class="w-full text-right text-xs border-collapse">
+              <thead class="bg-slate-900 text-white sticky top-0 z-20 select-none">
+                <tr>
+                  <th class="py-2.5 px-3 border-l border-slate-700 text-center min-w-[90px] bg-slate-950 font-bold">التاريخ</th>
+                  <th class="py-2.5 px-2 border-l border-slate-700 text-center min-w-[75px] bg-slate-950 font-bold">اليوم</th>
+                  ${visibleEmployees.map(emp => `<th colspan="2" class="py-2 px-2 border-l border-slate-700 text-center font-bold" style="border-top: 3px solid ${emp.color || '#6366F1'}">${emp.name}</th>`).join('')}
+                </tr>
+                <tr class="bg-slate-800 text-slate-300 text-[11px]">
+                  <th class="py-1 px-2 border-l border-slate-700 text-center bg-slate-900">-</th>
+                  <th class="py-1 px-2 border-l border-slate-700 text-center bg-slate-900">-</th>
+                  ${visibleEmployees.map(emp => `<th class="py-1 px-2 border-l border-slate-700 text-center text-emerald-300 min-w-[90px]">حضور</th><th class="py-1 px-2 border-l border-slate-700 text-center text-amber-300 min-w-[80px]">سلف</th>`).join('')}}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">${tableRows}</tbody>
+              <tfoot class="bg-slate-900 text-white sticky bottom-0 z-10 font-bold border-t-2 border-indigo-500 text-xs">
+                <tr>
+                  <td colspan="2" class="py-2 px-3 text-center bg-slate-950 border-l border-slate-700">الإجمالي</td>
+                  ${footCols}
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+
+        <!-- Final Payroll Table -->
+        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4 print:p-0 print:border-none">
+          <div class="flex justify-between items-center border-b pb-3 border-slate-200">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">كشف الرواتب والمستحقات النهائية لشهر ${state.monthTitle}</h2>
+              <p class="text-xs text-slate-500">صافي الرواتب المستحقة للصرف بعد خصم السلف</p>
+            </div>
+            <button onclick="window.print()" class="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold no-print">طباعة هذا الكشف</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-right text-xs border border-slate-200 rounded-xl overflow-hidden">
+              <thead class="bg-slate-900 text-white font-bold">
+                <tr>
+                  <th class="py-2.5 px-3">#</th>
+                  <th class="py-2.5 px-3">الموظف</th>
+                  <th class="py-2.5 px-3 text-center">أيام الحضور</th>
+                  <th class="py-2.5 px-3 text-center">إجمالي الساعات</th>
+                  <th class="py-2.5 px-3 text-center">المستحق</th>
+                  <th class="py-2.5 px-3 text-center text-amber-300">السلف والخصم</th>
+                  <th class="py-2.5 px-3 text-center text-emerald-300 font-black">صافي المستحق</th>
+                  <th class="py-2.5 px-3 text-center">التوقيع</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">${payrollRows}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    function editCell(empId, date, type, currentVal) {
+      const promptText = type === 'shift' ? 'أدخل الوردية (مثال: 5:00-2:00 أو اجازه):' : 'أدخل مبلغ السلفة (أو اتركه فارغاً للإلغاء):';
+      const newVal = prompt(promptText, currentVal || '');
+      if (newVal === null) return;
+
+      if (type === 'shift') {
+        let status = 'present', hours = 0;
+        const val = newVal.trim();
+        if (val.includes('اجازه') || val.includes('إجازة')) status = 'holiday';
+        else if (val.includes('غياب')) status = 'absent';
+        else if (val) { status = 'present'; hours = parseShiftHours(val); }
+        else status = 'none';
+
+        const idx = state.attendance.findIndex(a => a.employeeId === empId && a.date === date);
+        if (idx >= 0) {
+          state.attendance[idx] = { ...state.attendance[idx], shift: val, status, hours };
+        } else {
+          state.attendance.push({ id: 'att_' + Date.now(), employeeId: empId, date, shift: val, status, hours });
+        }
+      } else {
+        const raw = newVal.trim();
+        state.advances = state.advances.filter(a => !(a.employeeId === empId && a.date === date));
+        const numM = raw.match(/(\d+)/);
+        if (numM) {
+          state.advances.push({
+            id: 'adv_' + Date.now(),
+            employeeId: empId,
+            date,
+            amount: parseFloat(numM[1]),
+            type: 'advance',
+            notes: 'مسجل (' + raw + ')'
+          });
+        }
+      }
+      saveState();
+    }
+
+    function handleQuickSubmit(e) {
+      e.preventDefault();
+      const empId = document.getElementById('qEmp').value;
+      const date = document.getElementById('qDate').value;
+      const type = document.getElementById('qType').value;
+      const amt = document.getElementById('qAmt').value;
+
+      if (type === 'advance') {
+        if (amt) {
+          state.advances = state.advances.filter(a => !(a.employeeId === empId && a.date === date));
+          state.advances.push({
+            id: 'adv_' + Date.now(),
+            employeeId: empId,
+            date,
+            amount: parseFloat(amt),
+            type: 'advance',
+            notes: 'سلفة'
+          });
+        }
+      } else {
+        let status = 'present', hours = 0;
+        if (type === 'اجازه') status = 'holiday';
+        else { status = 'present'; hours = parseShiftHours(type); }
+
+        const idx = state.attendance.findIndex(a => a.employeeId === empId && a.date === date);
+        if (idx >= 0) {
+          state.attendance[idx] = { ...state.attendance[idx], shift: type, status, hours };
+        } else {
+          state.attendance.push({ id: 'att_' + Date.now(), employeeId: empId, date, shift: type, status, hours });
+        }
+      }
+      saveState();
+    }
+
+    render();
+  </script>
+</body>
+</html>
